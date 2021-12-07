@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc"
 	empty "google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/datawire/dlib/dgroup"
 	"github.com/datawire/dlib/dlog"
 	managerrpc "github.com/telepresenceio/telepresence/rpc/v2/manager"
 )
@@ -116,48 +115,6 @@ func (p *mgrProxy) UpdateIntercept(ctx context.Context, arg *managerrpc.UpdateIn
 }
 func (p *mgrProxy) ReviewIntercept(ctx context.Context, arg *managerrpc.ReviewInterceptRequest) (*empty.Empty, error) {
 	return p.client.ReviewIntercept(ctx, arg, p.callOptions...)
-}
-
-func (p *mgrProxy) ClientTunnel(fhDaemon managerrpc.Manager_ClientTunnelServer) error {
-	ctx := fhDaemon.Context()
-	fhManager, err := p.client.ClientTunnel(ctx, p.callOptions...)
-	if err != nil {
-		return err
-	}
-	grp := dgroup.NewGroup(ctx, dgroup.GroupConfig{})
-	grp.Go("manager->daemon", func(ctx context.Context) error {
-		for {
-			payload, err := fhManager.Recv()
-			if err != nil {
-				if err == io.EOF || ctx.Err() != nil {
-					return nil
-				}
-				return err
-			}
-			if err = fhDaemon.Send(payload); err != nil {
-				return err
-			}
-		}
-	})
-	grp.Go("daemon->manager", func(ctx context.Context) error {
-		for {
-			payload, err := fhDaemon.Recv()
-			if err != nil {
-				if err == io.EOF || ctx.Err() != nil {
-					return nil
-				}
-				return err
-			}
-			if err = fhManager.Send(payload); err != nil {
-				return err
-			}
-		}
-	})
-	return grp.Wait()
-}
-
-func (p *mgrProxy) AgentTunnel(server managerrpc.Manager_AgentTunnelServer) error {
-	return errors.New("must call manager.AgentTunnel from an agent (intercepted Pod), not from a client (workstation)")
 }
 
 type tmReceiver interface {

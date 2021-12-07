@@ -340,14 +340,6 @@ message AmbassadorCloudConnection {
   bool can_connect = 1;
 }
 
-// ConnMessage is a payload intended for a connection with a given id.
-// Deprecated. Telepresence now uses connection specific Tunnels and TunnelMessages
-message ConnMessage {
-  // conn_id is composed of L4 protocol, source IP, source port, destination IP and destination port
-  bytes conn_id = 1;
-  bytes payload = 5;
-}
-
 // TunnelMessage is a message sent over a Tunnel. First byte indicates type of message
 message TunnelMessage {
   bytes payload = 1;
@@ -486,16 +478,6 @@ service Manager {
   // changing the disposition from "WATING" to "ACTIVE" or to an
   // error, and setting a human-readable status message.
   rpc ReviewIntercept(ReviewInterceptRequest) returns (google.protobuf.Empty);
-
-  // ClientTunnel receives messages from the client and dispatches them to tracked
-  // net.Conn instances in the traffic-manager. Responses from tracked instances
-  // are sent back on the returned message stream
-  rpc ClientTunnel(stream ConnMessage) returns (stream ConnMessage);
-
-  // AgentTunnel receives messages from the agent and dispatches them to tracked
-  // net.Conn instances in the traffic-manager. Responses from tracked instances
-  // are sent back on the returned message stream
-  rpc AgentTunnel(stream ConnMessage) returns (stream ConnMessage);
 
   // LookupHost performs a DNS lookup in the cluster. If the caller has intercepts
   // active, the lookup will be performed from the intercepted pods.
