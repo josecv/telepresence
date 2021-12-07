@@ -1,5 +1,9 @@
 # Changelog
 
+### 2.5.0 (TBD)
+
+- Drop backward compatibility with versions 2.4.4 or older by removing the deprecated multiplexing tunnel functionality.
+
 ### 2.4.8 (December 3, 2021)
 
 - Feature: A RESTful service was added to Telepresence, both locally to the client and to the `traffic-agent` to help determine if messages with a set of headers should be
